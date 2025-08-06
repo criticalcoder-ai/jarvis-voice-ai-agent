@@ -4,4 +4,13 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "livekit>=1.0.12",
+    "livekit-agents>=1.2.3",
+    "livekit-plugins-deepgram>=1.2.3",
+    "livekit-plugins-elevenlabs>=1.2.3",
+    "livekit-plugins-openai>=1.2.3",
+    "livekit-plugins-silero>=1.2.3",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.1.1",
+]
