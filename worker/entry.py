@@ -1,6 +1,7 @@
 import logging
 from livekit.agents import AgentSession, JobContext
-from .agent import Assistant
+from agent import Assistant
+
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,10 @@
 import asyncio
 import logging
+import config
+import metric_handlers as mh
 from livekit.agents import Agent
 from livekit.plugins import openai, elevenlabs, silero, deepgram
 
-from . import config
-from . import metrics_handlers as mh
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,8 @@ class Assistant(Agent):
         tts = elevenlabs.TTS(
             api_key=config.ELEVENLABS_API_KEY,
             voice_id=config.DEFAULT_VOICE_ID,
-            model="eleven_v3",
+            model="eleven_turbo_v2_5",
+            enable_ssml_parsing=True
         )
         vad = silero.VAD.load()
 
