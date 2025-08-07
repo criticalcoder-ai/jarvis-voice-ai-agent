@@ -5,6 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.routes.sessions import router as sessions_router
 from app.routes.auth import router as auth_router
+from app.routes.voice import router as voice_router
 import logging
 
 logging.basicConfig(
@@ -36,3 +37,4 @@ def read_root():
 
 app.include_router(auth_router)
 app.include_router(sessions_router)
+app.include_router(voice_router)
