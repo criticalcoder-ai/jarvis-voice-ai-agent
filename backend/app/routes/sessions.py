@@ -46,6 +46,8 @@ async def create_session(
 
         # Create LiveKit room
         await livekit_service.create_room(session_id)
+        
+        # TODO get real id for model and voice from DB
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(session_id, user_id, body.model_id, body.voice_id)
