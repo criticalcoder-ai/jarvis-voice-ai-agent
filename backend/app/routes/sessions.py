@@ -46,11 +46,13 @@ async def create_session(
 
         # Create LiveKit room
         await livekit_service.create_room(session_id)
-        
+
         # TODO get real id for model and voice from DB
 
         # Generate LiveKit token
-        livekit_token = livekit_service.generate_token(session_id, user_id, body.model_id, body.voice_id)
+        livekit_token = livekit_service.generate_token(
+            session_id, user_id, body.model_id, body.voice_id
+        )
 
         return {
             "session_id": session_id,
@@ -76,7 +78,10 @@ async def create_session(
 
 @router.delete("/{session_id}", status_code=status.HTTP_202_ACCEPTED)
 async def end_session(
-    session_id: str, request: EndSessionRequest, user_info=Depends(get_user_id_or_guest)
+    session_id: str,
+    body: EndSessionRequest,
+    request: Request,
+    user_info=Depends(get_user_id_or_guest),
 ):
     """
     End an active session and record its duration in usage limits.
@@ -90,7 +95,7 @@ async def end_session(
         if active_sessions == 0:
             raise HTTPException(status_code=404, detail="No active sessions found")
 
-        duration_seconds = request.duration_seconds
+        duration_seconds = body.duration_seconds
         if duration_seconds <= 0:
             logger.warning(f"No valid session duration provided for {session_id}")
             duration_seconds = 0
