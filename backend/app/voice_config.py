@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from pydantic import BaseModel
 
 
@@ -7,69 +7,68 @@ class VoiceConfig(BaseModel):
     display_name: str
     language: str
     type: str
-    gender: str
+    gender: Optional[str] = None
     available_on_guest: bool
 
 
 VOICES: Dict[str, VoiceConfig] = {
-    # --- FEMALE VOICES ---
-    "en-US-Wavenet-C": VoiceConfig(
-        voice_id="en-US-Wavenet-C",
-        display_name="US Female - Wavenet C",
+    "en-US-Chirp3-HD-Charon": VoiceConfig(
+        voice_id="en-US-Chirp3-HD-Charon",
+        display_name="US Male – Charon",
         language="English (US)",
-        type="wavenet",
-        gender="female",
-        available_on_guest=True
+        type="chirp3-hd",
+        gender="male",
+        available_on_guest = True
     ),
-    "en-US-Neural2-G": VoiceConfig(
-        voice_id="en-US-Neural2-G",
-        display_name="US Female - Neural2 G",
+    "en-US-Chirp3-HD-Kore": VoiceConfig(
+        voice_id="en-US-Chirp3-HD-Kore",
+        display_name="US Female – Kore",
         language="English (US)",
-        type="neural2",
-        gender="female",
-        available_on_guest=False
-    ),
-    "en-GB-Wavenet-F": VoiceConfig(
-        voice_id="en-GB-Wavenet-F",
-        display_name="UK Female - Wavenet F",
-        language="English (UK)",
-        type="wavenet",
-        gender="female",
-        available_on_guest=True
-    ),
-    "en-IN-Chirp3-HD-Erinome": VoiceConfig(
-        voice_id="en-IN-Chirp3-HD-Erinome",
-        display_name="Indian Female - Chirp3 Erinome",
-        language="English (India)",
         type="chirp3-hd",
         gender="female",
-        available_on_guest=False
+        available_on_guest = True
+    ),
+    "en-US-Chirp3-HD-Leda": VoiceConfig(
+        voice_id="en-US-Chirp3-HD-Leda",
+        display_name="US Female – Leda",
+        language="English (US)",
+        type="chirp3-hd",
+        gender="female",
+        available_on_guest = False
     ),
 
-    # --- MALE VOICES ---
-    "en-US-Wavenet-D": VoiceConfig(
-        voice_id="en-US-Wavenet-D",
-        display_name="US Male - Wavenet D",
-        language="English (US)",
-        type="wavenet",
-        gender="male",
-        available_on_guest=True
-    ),
-    "en-GB-Neural2-B": VoiceConfig(
-        voice_id="en-GB-Neural2-B",
-        display_name="UK Male - Neural2 B",
+    "en-GB-Chirp3-HD-Schedar": VoiceConfig(
+        voice_id="en-GB-Chirp3-HD-Schedar",
+        display_name="UK Male – Schedar",
         language="English (UK)",
-        type="neural2",
-        gender="male",
-        available_on_guest=False
-    ),
-    "en-IN-Chirp3-HD-Tarun": VoiceConfig(
-        voice_id="en-IN-Chirp3-HD-Tarun",
-        display_name="Indian Male - Chirp3 Tarun",
-        language="English (India)",
         type="chirp3-hd",
         gender="male",
-        available_on_guest=False
+        available_on_guest = True
+    ),
+    "en-GB-Chirp3-HD-Sulafat": VoiceConfig(
+        voice_id="en-GB-Chirp3-HD-Sulafat",
+        display_name="UK Female – Sulafat",
+        language="English (UK)",
+        type="chirp3-hd",
+        gender="female",
+        available_on_guest = False
+    ),
+    "en-GB-Chirp3-HD-Zubenelgenubi": VoiceConfig(
+        voice_id="en-GB-Chirp3-HD-Zubenelgenubi",
+        display_name="UK Male – Zubenelgenubi",
+        language="English (UK)",
+        type="chirp3-hd",
+        gender="male",
+        available_on_guest = False
+    ),
+
+    "en-US-Chirp3-HD-Aoede": VoiceConfig(
+        voice_id="en-US-Chirp3-HD-Aoede",
+        display_name="US Female – Aoede",
+        language="English (US)",
+        type="chirp3-hd",
+        gender="female",
+        available_on_guest = False
     ),
 }
 
@@ -77,5 +76,6 @@ VOICES: Dict[str, VoiceConfig] = {
 def get_voice_by_id(voice_id: str) -> VoiceConfig:
     return VOICES[voice_id]
 
-def get_all_voices() -> List[VoiceConfig]:    
+
+def get_all_voices() -> List[VoiceConfig]:
     return list(VOICES.values())
