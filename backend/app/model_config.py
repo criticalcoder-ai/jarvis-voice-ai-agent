@@ -1,10 +1,11 @@
 from typing import List, Dict
 
-class ModelConfig:
-    def __init__(self, model_id: str, display_name: str, available_on_guest: bool):
-        self.model_id = model_id
-        self.display_name = display_name
-        self.available_on_guest = available_on_guest
+from pydantic import BaseModel
+
+class ModelConfig(BaseModel):
+    model_id: str
+    display_name: str
+    available_on_guest: bool
 
 MODELS: Dict[str, ModelConfig] = {
     "openai/gpt-4.1-mini": ModelConfig(
