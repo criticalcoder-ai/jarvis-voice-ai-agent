@@ -3,28 +3,32 @@ import logging
 import config
 import metric_handlers as mh
 from livekit.agents import Agent
-from livekit.plugins import openai, elevenlabs, silero, deepgram
+from livekit.plugins import openai, silero, deepgram, google
 
 
 logger = logging.getLogger(__name__)
 
 
 class Assistant(Agent):
-    def __init__(self) -> None:
+    def __init__(self, model_id: str, voice_id: str, voice_gender: str) -> None:
         stt = deepgram.STT(
             api_key=config.DEEPGRAM_API_KEY, model="nova-2", language="en-US"
         )
+
         llm = openai.LLM(
             api_key=config.OPENROUTER_API_KEY,
             base_url=config.OPENROUTER_BASE_URL,
-            model=config.DEFAULT_LLM_MODEL,
+            model=model_id,
         )
-        tts = elevenlabs.TTS(
-            api_key=config.ELEVENLABS_API_KEY,
-            voice_id=config.DEFAULT_VOICE_ID,
-            model="eleven_turbo_v2_5",
-            enable_ssml_parsing=True
+
+        tts = google.TTS(
+            language="en-US",
+            gender=voice_gender,
+            voice_name=voice_id,
+            credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
+            enable_ssml=True,
         )
+
         vad = silero.VAD.load()
 
         super().__init__(
@@ -42,6 +46,7 @@ class Assistant(Agent):
             vad=vad,
         )
 
+        # Attach metrics listeners
         llm.on(
             "metrics_collected", lambda m: asyncio.create_task(mh.handle_llm_metrics(m))
         )
