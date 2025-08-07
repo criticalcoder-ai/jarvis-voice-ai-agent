@@ -53,7 +53,7 @@ async def create_session(
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(
-            session_id, user_id, body.model_id, body.voice_id, voice_gender
+            session_id, user_id, body.model_id, body.voice_id, 60, voice_gender
         )
 
         return {
