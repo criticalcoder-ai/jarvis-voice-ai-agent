@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status
 from uuid import uuid4
 import logging
 from app.auth.dependencies import get_user_id_or_guest
-from app.schemas.sessions import EndSessionRequest
+from app.schemas.sessions import CreateSessionRequest, EndSessionRequest
 from app.services.access_control import access_control
 from app.services.exceptions import TierNotFoundError, LimitExceededError
 from app.services.livekit import livekit_service
@@ -13,7 +13,11 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-async def create_session(request: Request, user_info=Depends(get_user_id_or_guest)):
+async def create_session(
+    request: Request,
+    body: CreateSessionRequest,
+    user_info=Depends(get_user_id_or_guest),
+):
     """
     Create a new voice/chat session for the user.
     Applies tier-based access control rules and returns a session ID.
@@ -44,7 +48,7 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
         await livekit_service.create_room(session_id)
 
         # Generate LiveKit token
-        livekit_token = livekit_service.generate_token(session_id, user_id)
+        livekit_token = livekit_service.generate_token(session_id, user_id, body.model_id, body.voice_id)
 
         return {
             "session_id": session_id,
@@ -52,7 +56,7 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
             "livekit_url": livekit_service.livekit_url,
             "livekit_token": livekit_token,
             "ip": client_ip,
-            "user_agent": user_agent
+            "user_agent": user_agent,
         }
 
     except TierNotFoundError as e:
@@ -70,9 +74,7 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
 
 @router.delete("/{session_id}", status_code=status.HTTP_202_ACCEPTED)
 async def end_session(
-    session_id: str, 
-    request: EndSessionRequest,
-    user_info=Depends(get_user_id_or_guest)
+    session_id: str, request: EndSessionRequest, user_info=Depends(get_user_id_or_guest)
 ):
     """
     End an active session and record its duration in usage limits.
@@ -93,10 +95,9 @@ async def end_session(
 
         # Remove session from Redis & update daily usage
         await access_control.end_session(user_id, session_id, duration_seconds)
-        
-         # Delete LiveKit room
-        await livekit_service.delete_room(session_id)
 
+        # Delete LiveKit room
+        await livekit_service.delete_room(session_id)
 
         logger.info(
             f"Ended session {session_id} for {user_id} | "

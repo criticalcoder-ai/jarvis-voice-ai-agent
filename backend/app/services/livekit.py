@@ -1,3 +1,4 @@
+import json
 import os
 import logging
 from datetime import timedelta
@@ -32,7 +33,7 @@ class LiveKitService:
                 await client.aclose()
 
     def generate_token(
-        self, room_name: str, participant_id: str, ttl_minutes: int = 60
+        self, room_name: str, participant_id: str, model_id: str, voice_id: str, ttl_minutes: int = 60
     ) -> str:
         """
         Generate LiveKit access token for a participant.
@@ -46,6 +47,14 @@ class LiveKitService:
             )
         )
         token.with_ttl(timedelta(minutes=ttl_minutes))
+        
+        # Metadata must be a string
+        metadata = json.dumps({
+            "model_id": model_id,
+            "voice_id": voice_id
+        })
+        token.with_metadata(metadata)
+        
         return token.to_jwt()
 
     async def create_room(
