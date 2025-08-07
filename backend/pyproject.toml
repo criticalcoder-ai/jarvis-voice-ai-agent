@@ -10,6 +10,7 @@ dependencies = [
     "databases>=0.9.0",
     "fastapi>=0.116.1",
     "itsdangerous>=2.2.0",
+    "livekit-api>=1.0.5",
     "psycopg2-binary>=2.9.10",
     "python-dotenv>=1.1.1",
     "python-jose>=3.5.0",
