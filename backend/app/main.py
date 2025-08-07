@@ -1,6 +1,7 @@
-def main():
-    print("Hello from backend!")
+from fastapi import FastAPI
+from app.routes import sessions, auth
 
+app = FastAPI(title="Jarvis Voice AI Backend")
 
-if __name__ == "__main__":
-    main()
+app.include_router(auth.router)
+app.include_router(sessions.router)
