@@ -65,11 +65,17 @@ async def create_session(
 
     except TierNotFoundError as e:
         logger.warning(f"Tier not found for user {user_id}: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+                status_code=400,
+                detail={"reason": e.reason, "action": e.action}
+            )
 
     except LimitExceededError as e:
         logger.info(f"Limit exceeded for user {user_id}: {e}")
-        raise HTTPException(status_code=403, detail=str(e))
+        raise HTTPException(
+                status_code=403,
+                detail={"reason": e.reason, "action": e.action}
+            )
 
     except Exception as e:
         logger.exception(f"Unexpected error creating session for {user_id}")

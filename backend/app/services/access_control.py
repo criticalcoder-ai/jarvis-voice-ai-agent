@@ -43,19 +43,19 @@ class AccessControlService:
         """Checks if a user has permission to access a given tier."""
         if tier not in self.tiers:
             logger.warning(f"Tier '{tier}' not found for user {user_id}")
-            raise TierNotFoundError(f"Invalid tier: {tier}")
+            raise TierNotFoundError(reason=f"Invalid tier: {tier}", action="Check tiers")
 
         limits = self.tiers[tier]
 
         # Concurrent session check
         active_count = await self.get_active_sessions(user_id)
         if active_count >= limits.concurrent_sessions:
-            raise LimitExceededError("Concurrent session limit reached")
+            raise LimitExceededError(reason="Concurrent session limit reached", action="Close old sessions")
 
         # Daily usage check
         usage = await self._get_daily_usage(user_id)
         if limits.daily_limit is not None and usage >= limits.daily_limit:
-            raise LimitExceededError("Daily usage limit reached")
+            raise LimitExceededError(reason="Daily usage limit reached", action="Login to get more minutes")
 
         return AccessResult(allowed=True)
 
