@@ -5,6 +5,7 @@ from typing import Optional
 import logging
 from app.schemas.access_control import AccessResult, TierLimits
 from app.services.exceptions import LimitExceededError, TierNotFoundError
+from app.services.redis_client import redis_client
 
 logger = logging.getLogger(__name__)
 
@@ -94,4 +95,4 @@ class AccessControlService:
         await self.redis.expire(usage_key, 86400)
 
 
-access_control = AccessControlService()
+access_control = AccessControlService(redis_client=redis_client)

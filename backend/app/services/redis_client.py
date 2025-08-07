@@ -1,8 +1,4 @@
-import os
 from upstash_redis.asyncio import Redis
+import app.config as config
 
-
-redis_client = Redis.from_url(
-    os.getenv("UPSTASH_REDIS_URL"),
-    decode_responses=True
-)
+redis_client = Redis(url=config.REDIS_URL, token=config.REDIS_TOKEN)

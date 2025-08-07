@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
-import app.auth.config as config
+import app.config as config
 from app.auth.redis_sessions import is_token_blacklisted
 
 

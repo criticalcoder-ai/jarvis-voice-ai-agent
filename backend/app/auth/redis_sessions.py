@@ -1,6 +1,4 @@
 import logging
-from datetime import timedelta
-from typing import Optional
 
 from app.services.redis_client import redis_client 
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 import json
 import logging
-import config
+import app.config as config
 
 from app.auth.jwt_manager import jwt_manager
 from app.auth.dependencies import get_current_user_required

@@ -4,7 +4,7 @@ import logging
 from datetime import timedelta
 from contextlib import asynccontextmanager
 from livekit import api
-import config
+import app.config as config
 
 logger = logging.getLogger(__name__)
 
