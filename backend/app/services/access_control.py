@@ -29,7 +29,7 @@ class AccessControlService:
             ),
         }
 
-    async def _get_active_sessions(self, user_id: str) -> int:
+    async def get_active_sessions(self, user_id: str) -> int:
         """Returns the number of active sessions for a user."""
         return await self.redis.scard(f"user_sessions:{user_id}") or 0
 
@@ -92,3 +92,6 @@ class AccessControlService:
         # Set the daily usage key to expire in 24 hours
         # Resets the user's daily usage at the start of a new day
         await self.redis.expire(usage_key, 86400)
+
+
+access_control = AccessControlService()
