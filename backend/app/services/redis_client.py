@@ -1,8 +1,8 @@
 import os
-from upstash_redis.asyncio import redis
+from upstash_redis.asyncio import Redis
 
 
-redis_client = redis.from_url(
+redis_client = Redis.from_url(
     os.getenv("UPSTASH_REDIS_URL"),
     decode_responses=True
 )
