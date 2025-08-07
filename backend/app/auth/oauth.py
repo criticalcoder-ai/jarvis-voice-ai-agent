@@ -2,9 +2,9 @@ from pathlib import Path
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 
-BASE_DIR = Path(__file__).resolve().parent.parent  # Goes from backend/ → jarvis-voice-agent/
-env_path = BASE_DIR / ".env"
-config = Config(env_file=str(env_path))
+# Get base directory: backend/
+BASE_DIR = Path(__file__).resolve().parents[3]
+config = Config(BASE_DIR / ".env")
 
 oauth = OAuth(config)
 
