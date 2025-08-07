@@ -1,8 +1,7 @@
 # app/routes/sessions.py
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, status
 from uuid import uuid4
 import logging
-
 from app.auth.dependencies import get_user_id_or_guest
 from app.services.access_control import access_control
 from app.services.exceptions import TierNotFoundError, LimitExceededError
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
-@router.post("/create")
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_session(request: Request, user_info=Depends(get_user_id_or_guest)):
     """
     Create a new voice/chat session for the user.
@@ -21,15 +20,16 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
     client_ip = request.client.host
     user_agent = request.headers.get("user-agent", "unknown")
 
-    logger.info(f"Session create request from {user_id} ({tier}) | IP: {client_ip} | UA: {user_agent}")
+    logger.info(
+        f"Session create request from {user_id} ({tier}) | IP: {client_ip} | UA: {user_agent}"
+    )
 
     try:
         # Check tier & usage permissions
         check = await access_control.check_permission(user_id, tier)
         if not check.allowed:
             raise HTTPException(
-                status_code=403,
-                detail={"reason": check.reason, "action": check.action}
+                status_code=403, detail={"reason": check.reason, "action": check.action}
             )
 
         # Generate unique session ID
@@ -43,7 +43,7 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
             "session_id": session_id,
             "tier": tier,
             "ip": client_ip,
-            "user_agent": user_agent
+            "user_agent": user_agent,
         }
 
     except TierNotFoundError as e:
@@ -56,4 +56,50 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
 
     except Exception as e:
         logger.exception(f"Unexpected error creating session for {user_id}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.delete("/{session_id}", status_code=status.HTTP_202_ACCEPTED)
+async def end_session(
+    session_id: str, request: Request, user_info=Depends(get_user_id_or_guest)
+):
+    """
+    End an active session and record its duration in usage limits.
+    """
+    user_id, tier = user_info
+    client_ip = request.client.host
+
+    try:
+        # Validate that the session exists for the user
+        active_sessions = await access_control._get_active_sessions(user_id)
+        if active_sessions == 0:
+            raise HTTPException(status_code=404, detail="No active sessions found")
+
+        # For now, we assume frontend sends `X-Session-Duration` in seconds
+        duration_seconds = int(request.headers.get("X-Session-Duration", 0))
+        if duration_seconds <= 0:
+            logger.warning(f"No valid session duration provided for {session_id}")
+            duration_seconds = 0
+
+        # Remove session from Redis & update daily usage
+        await access_control.end_session(user_id, session_id, duration_seconds)
+        
+        # TODO - Replace with LiveKit/JWT session token revocation
+
+        logger.info(
+            f"Ended session {session_id} for {user_id} | "
+            f"Duration: {duration_seconds}s | IP: {client_ip}"
+        )
+
+        return {
+            "status": "ended",
+            "session_id": session_id,
+            "duration_seconds": duration_seconds,
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.exception(f"Error ending session {session_id} for {user_id}")
         raise HTTPException(status_code=500, detail="Internal server error")
