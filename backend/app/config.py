@@ -5,8 +5,8 @@ load_dotenv(override=True)
 
 APP_NAME = "Jarvis Voice AI Backend"
 
-REDIS_URL = os.getenv("UPSTASH_REDIS_URL")  # Upstash URL
-REDIS_TOKEN = os.getenv("UPSTASH_REDIS_TOKEN")
+UPSTASH_REDIS_REST_URL = os.getenv("UPSTASH_REDIS_REST_URL")  # Upstash URL
+UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
 LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY")
 LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET")
