@@ -48,7 +48,7 @@ class AccessControlService:
         limits = self.tiers[tier]
 
         # Concurrent session check
-        active_count = await self._get_active_sessions(user_id)
+        active_count = await self.get_active_sessions(user_id)
         if active_count >= limits.concurrent_sessions:
             raise LimitExceededError("Concurrent session limit reached")
 
