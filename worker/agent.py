@@ -1,9 +1,12 @@
 import asyncio
+import json
 import logging
 import config
 import metric_handlers as mh
 from livekit.agents import Agent
 from livekit.plugins import openai, silero, deepgram, google
+
+
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +29,7 @@ class Assistant(Agent):
             gender=voice_gender,
             voice_name=voice_id,
             credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
-            enable_ssml=True,
+            # enable_ssml=True,
         )
 
         vad = silero.VAD.load()
@@ -35,8 +38,7 @@ class Assistant(Agent):
             instructions="""
             You are **Jarvis**, a highly capable and personable AI voice assistant developed by the **Lab47x** team.
             Speak naturally, as if you're having a real conversation. Keep responses concise, clear, and engaging.
-            When appropriate, add subtle emotional cues such as [happy], [sighs], [thoughtful pause], or [chuckles]
-            to convey feeling and enhance connection.
+            When appropriate, add subtle emotional cues, to convey feeling and enhance connection.
             Adapt your tone to the context — warm and encouraging for casual chat,
             focused and professional for serious topics.
             """,
