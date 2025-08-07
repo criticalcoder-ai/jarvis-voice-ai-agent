@@ -3,8 +3,10 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status
 from uuid import uuid4
 import logging
 from app.auth.dependencies import get_user_id_or_guest
+from app.schemas.sessions import EndSessionRequest
 from app.services.access_control import access_control
 from app.services.exceptions import TierNotFoundError, LimitExceededError
+from app.services.livekit import livekit_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -38,12 +40,19 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
         # Track session in Redis
         await access_control.start_session(user_id, session_id)
 
-        # TODO: Replace with LiveKit/JWT session token generation
+        # Create LiveKit room
+        await livekit_service.create_room(session_id)
+
+        # Generate LiveKit token
+        livekit_token = livekit_service.generate_token(session_id, user_id)
+
         return {
             "session_id": session_id,
             "tier": tier,
+            "livekit_url": livekit_service.livekit_url,
+            "livekit_token": livekit_token,
             "ip": client_ip,
-            "user_agent": user_agent,
+            "user_agent": user_agent
         }
 
     except TierNotFoundError as e:
@@ -61,7 +70,9 @@ async def create_session(request: Request, user_info=Depends(get_user_id_or_gues
 
 @router.delete("/{session_id}", status_code=status.HTTP_202_ACCEPTED)
 async def end_session(
-    session_id: str, request: Request, user_info=Depends(get_user_id_or_guest)
+    session_id: str, 
+    request: EndSessionRequest,
+    user_info=Depends(get_user_id_or_guest)
 ):
     """
     End an active session and record its duration in usage limits.
@@ -71,12 +82,11 @@ async def end_session(
 
     try:
         # Validate that the session exists for the user
-        active_sessions = await access_control._get_active_sessions(user_id)
+        active_sessions = await access_control.get_active_sessions(user_id)
         if active_sessions == 0:
             raise HTTPException(status_code=404, detail="No active sessions found")
 
-        # For now, we assume frontend sends `X-Session-Duration` in seconds
-        duration_seconds = int(request.headers.get("X-Session-Duration", 0))
+        duration_seconds = request.duration_seconds
         if duration_seconds <= 0:
             logger.warning(f"No valid session duration provided for {session_id}")
             duration_seconds = 0
@@ -84,7 +94,9 @@ async def end_session(
         # Remove session from Redis & update daily usage
         await access_control.end_session(user_id, session_id, duration_seconds)
         
-        # TODO - Replace with LiveKit/JWT session token revocation
+         # Delete LiveKit room
+        await livekit_service.delete_room(session_id)
+
 
         logger.info(
             f"Ended session {session_id} for {user_id} | "
