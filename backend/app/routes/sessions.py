@@ -7,6 +7,7 @@ from app.schemas.sessions import CreateSessionRequest, EndSessionRequest
 from app.services.access_control import access_control
 from app.services.exceptions import TierNotFoundError, LimitExceededError
 from app.services.livekit import livekit_service
+from app.voice_config import get_voice_by_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -47,11 +48,12 @@ async def create_session(
         # Create LiveKit room
         await livekit_service.create_room(session_id)
 
-        # TODO get real id for model and voice from DB
+
+        voice_gender = get_voice_by_id(body.voice_id).gender
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(
-            session_id, user_id, body.model_id, body.voice_id
+            session_id, user_id, body.model_id, body.voice_id, voice_gender
         )
 
         return {

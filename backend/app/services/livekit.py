@@ -33,7 +33,7 @@ class LiveKitService:
                 await client.aclose()
 
     def generate_token(
-        self, room_name: str, participant_id: str, model_id: str, voice_id: str, ttl_minutes: int = 60
+        self, room_name: str, participant_id: str, model_id: str, voice_id: str, ttl_minutes: int = 60, voice_gender: str = "female"
     ) -> str:
         """
         Generate LiveKit access token for a participant.
@@ -51,7 +51,8 @@ class LiveKitService:
         # Metadata must be a string
         metadata = json.dumps({
             "model_id": model_id,
-            "voice_id": voice_id
+            "voice_id": voice_id,
+            "voice_gender": voice_gender
         })
         token.with_metadata(metadata)
         
