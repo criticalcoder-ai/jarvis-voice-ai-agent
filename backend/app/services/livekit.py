@@ -33,7 +33,7 @@ class LiveKitService:
                 await client.aclose()
 
     def generate_token(
-        self, room_name: str, participant_id: str, model_id: str, voice_id: str, ttl_minutes: int = 60, voice_gender: str = "female"
+        self, room_name: str, participant_id: str, model_id: str, voice_id: str, ttl_minutes: int = 60, voice_gender: str = "male"
     ) -> str:
         """
         Generate LiveKit access token for a participant.
