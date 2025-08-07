@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from pydantic import Field
 
 DEFAULT_MODEL_ID = "google/gemini-2.5-flash-lite"
-DEFAULT_VOICE_ID = "en-US-Wavenet-C"
+DEFAULT_VOICE_ID = "en-US-Chirp3-HD-Charon"
 
 class CreateSessionRequest(BaseModel):
     model_id: Optional[str] = Field(DEFAULT_MODEL_ID, description="AI model identifier to use for the session")
