@@ -28,6 +28,7 @@ async def entry_point(ctx: JobContext):
     if ctx.room.metadata:
         try:
             agent_config = json.loads(ctx.room.metadata)
+            logger.info(f"Using config from LiveKit metadata: {agent_config}")
         except json.JSONDecodeError:
             pass
 
@@ -37,6 +38,7 @@ async def entry_point(ctx: JobContext):
         config_json = await redis_client.get(redis_key)
         if config_json:
             agent_config = json.loads(config_json)
+            logger.info(f"Using config from Redis: {config_json}")
         else:
             logger.warning(f"No agent config found in Redis for {ctx.room.name}, using defaults")
 
@@ -44,7 +46,7 @@ async def entry_point(ctx: JobContext):
     model_id = agent_config.get("model_id", config.DEFAULT_LLM_MODEL)
     voice = agent_config.get("voice", {})
 
-    logger.info(f"Using config: {json.dumps(agent_config, indent=2)}")
+    
 
     session = AgentSession()
 
