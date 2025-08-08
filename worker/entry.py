@@ -31,7 +31,7 @@ async def entry_point(ctx: JobContext):
 
     # Fallback to Redis if empty/missing
     if not agent_config:
-        redis_key = f"Agent Config:{ctx.room.name}"
+        redis_key = f"Agent-Config:{ctx.room.name}"
         config_json = await redis_client.get(redis_key)
         if config_json:
             agent_config = parse_config(config_json)
