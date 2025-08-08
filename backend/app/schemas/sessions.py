@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel
 from pydantic import Field
 
-DEFAULT_MODEL_ID = "google/gemini-2.5-flash-lite"
+DEFAULT_MODEL_ID = "google/gemini-2.5-flash"
 DEFAULT_VOICE_ID = "en-US-Chirp3-HD-Charon"
 
 class CreateSessionRequest(BaseModel):
