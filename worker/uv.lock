@@ -1341,6 +1341,18 @@ wheels = [
 ]
 
 [[package]]
+name = "upstash-redis"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/73/4c/308af54f76b54c2245f60a8f294ec710738402d44291e8605aeac8d82532/upstash_redis-1.4.0.tar.gz", hash = "sha256:e3b77205cb99695b8000042695f8054e27c12fbc2eebe5ccdd428d986b11de87", size = 34976, upload-time = "2025-04-11T13:31:39.274Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/39/1d/faadd7437cbb7496ca8971e18e0ccaf57b373a87ed470562e1f12a67a63e/upstash_redis-1.4.0-py3-none-any.whl", hash = "sha256:88e41c4e95be3ea1e97b5e7818dcecd1bcbea5a3f074cc2c41951bd07fe0db1c", size = 37305, upload-time = "2025-04-11T13:31:37.587Z" },
+]
+
+[[package]]
 name = "urllib3"
 version = "2.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1436,6 +1448,7 @@ dependencies = [
     { name = "livekit-plugins-silero" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "upstash-redis" },
 ]
 
 [package.metadata]
@@ -1448,6 +1461,7 @@ requires-dist = [
     { name = "livekit-plugins-silero", specifier = ">=1.2.3" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
+    { name = "upstash-redis", specifier = ">=1.4.0" },
 ]
 
 [[package]]
