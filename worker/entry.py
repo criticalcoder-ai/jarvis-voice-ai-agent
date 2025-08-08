@@ -5,8 +5,8 @@ import os
 from livekit.agents import AgentSession, JobContext
 from agent import Assistant
 import config
-from redis_client import redis_client
 from utils import get_from_redis_with_retry, parse_config
+from livekit.plugins import google as google_plugins
 
 
 logger = logging.getLogger(__name__)
@@ -39,15 +39,27 @@ async def entry_point(ctx: JobContext):
         else:
             logger.warning(f"No agent config found in Redis for {ctx.room.name}, using defaults")
 
-
+    # Fallback to defaults if still empty
     model_id = agent_config.get("model_id", config.DEFAULT_LLM_MODEL)
-    voice = agent_config.get("voice", {}) or {}
-
+    voice_cfg = agent_config.get("voice") or {}
     
+    # Build TTS once
+    tts = google_plugins.TTS(
+        language=voice_cfg.get("language", config.DEFAULT_TTS_LANGUAGE),
+        gender=voice_cfg.get("gender", config.DEFAULT_TTS_GENDER),
+        voice_name=voice_cfg.get("voice_id", config.DEFAULT_TTS_VOICE),
+        credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
+    )
 
-    session = AgentSession()
+    # Prewarm so first utterance uses correct voice
+    try:
+        tts.prewarm()
+    except Exception:
+        logger.exception("TTS prewarm failed")
+
+    session = AgentSession(tts=tts)  # Apply at session level
 
     await session.start(
-        agent=Assistant(model_id=model_id, voice=voice),
+        agent=Assistant(model_id=model_id, tts=tts),
         room=ctx.room,
     )

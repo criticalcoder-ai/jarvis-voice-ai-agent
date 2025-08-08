@@ -4,14 +4,15 @@ import logging
 import config
 import metric_handlers as mh
 from livekit.agents import Agent
-from livekit.plugins import openai, silero, deepgram, google
+from livekit.plugins.google import TTS as GoogleTTS
+from livekit.plugins import openai, silero, deepgram
 
 
 logger = logging.getLogger(__name__)
 
 
 class Assistant(Agent):
-    def __init__(self, model_id: str, voice: dict) -> None:
+    def __init__(self, model_id: str, tts: GoogleTTS) -> None:
         stt = deepgram.STT(
             api_key=config.DEEPGRAM_API_KEY,
             model=config.DEFAULT_STT_MODEL,
@@ -22,13 +23,6 @@ class Assistant(Agent):
             api_key=config.OPENROUTER_API_KEY,
             base_url=config.OPENROUTER_BASE_URL,
             model=model_id,
-        )
-
-        tts = google.TTS(
-            language=voice.get("language", config.DEFAULT_TTS_LANGUAGE),
-            gender=voice.get("gender", config.DEFAULT_TTS_GENDER),
-            voice_name=voice.get("voice_id", config.DEFAULT_TTS_VOICE),
-            credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
         )
 
         vad = silero.VAD.load()
