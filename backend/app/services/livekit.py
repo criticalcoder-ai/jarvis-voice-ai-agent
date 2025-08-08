@@ -33,7 +33,7 @@ class LiveKitService:
                 await client.aclose()
 
     def generate_token(
-        self, room_name: str, participant_id: str, model_id: str, voice_id: str, ttl_minutes: int = 60, voice_gender: str = "male"
+        self, room_name: str, participant_id: str, ttl_minutes: int = 60,
     ) -> str:
         """
         Generate LiveKit access token for a participant.
@@ -47,24 +47,17 @@ class LiveKitService:
             )
         )
         token.with_ttl(timedelta(minutes=ttl_minutes))
-        
-        # Metadata must be a string
-        metadata = json.dumps({
-            "model_id": model_id,
-            "voice_id": voice_id,
-            "voice_gender": voice_gender
-        })
-        token.with_metadata(metadata)
-        
+
         return token.to_jwt()
 
     async def create_room(
-        self, room_name: str, max_participants: int = 2, empty_timeout: int = 300
+        self, room_name: str, agent_config: str, max_participants: int = 2, empty_timeout: int = 300
     ):
         """Create a LiveKit room"""
         async with self.get_api_client() as client:
             req = api.CreateRoomRequest(
                 name=room_name,
+                metadata=agent_config,
                 max_participants=max_participants,
                 empty_timeout=empty_timeout,
             )

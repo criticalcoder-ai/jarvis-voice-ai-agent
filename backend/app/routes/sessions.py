@@ -1,4 +1,5 @@
 # app/routes/sessions.py
+import json
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from uuid import uuid4
 import logging
@@ -44,16 +45,21 @@ async def create_session(
 
         # Track session in Redis
         await access_control.start_session(user_id, session_id)
-
+        
+        voice = get_voice_by_id(body.voice_id).model_dump()   
+        agent_config = json.dumps({
+            "model_id": body.model_id,
+            "voice": voice
+        })
+        
         # Create LiveKit room
-        await livekit_service.create_room(session_id)
+        await livekit_service.create_room(session_id, agent_config)
 
-
-        voice_gender = get_voice_by_id(body.voice_id).gender
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(
-            session_id, user_id, body.model_id, body.voice_id, 60, voice_gender
+            session_id,
+            user_id,
         )
 
         return {
@@ -68,16 +74,14 @@ async def create_session(
     except TierNotFoundError as e:
         logger.warning(f"Tier not found for user {user_id}: {e}")
         raise HTTPException(
-                status_code=400,
-                detail={"reason": e.reason, "action": e.action}
-            )
+            status_code=400, detail={"reason": e.reason, "action": e.action}
+        )
 
     except LimitExceededError as e:
         logger.info(f"Limit exceeded for user {user_id}: {e}")
         raise HTTPException(
-                status_code=403,
-                detail={"reason": e.reason, "action": e.action}
-            )
+            status_code=403, detail={"reason": e.reason, "action": e.action}
+        )
 
     except Exception as e:
         logger.exception(f"Unexpected error creating session for {user_id}")
