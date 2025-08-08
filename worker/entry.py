@@ -16,8 +16,11 @@ async def entry_point(ctx: JobContext):
     await ctx.connect()
 
     # Get agent config from room metadata
-    raw = ctx.room.metadata
-    agent_config = json.loads(raw)
+    agent_config = {}
+    if ctx.room.metadata:
+        raw = ctx.room.metadata
+        agent_config = json.loads(raw)
+        
 
     model_id = agent_config.get("model_id", config.DEFAULT_LLM_MODEL)
     voice = agent_config.get("voice", {})
