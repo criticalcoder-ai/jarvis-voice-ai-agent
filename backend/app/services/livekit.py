@@ -34,7 +34,7 @@ class LiveKitService:
                 await client.aclose()
 
     def generate_token(
-        self, room_name: str, participant_id: str, ttl_minutes: int = 30,
+        self, room_name: str, participant_id: str, ttl_minutes: int = 60,
     ) -> str:
         """
         Generate LiveKit access token for a participant.
