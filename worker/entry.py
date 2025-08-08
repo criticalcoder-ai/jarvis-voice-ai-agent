@@ -6,17 +6,17 @@ from livekit.agents import AgentSession, JobContext
 from agent import Assistant
 import config
 from redis_client import redis_client
+from utils import parse_config
 
 
 logger = logging.getLogger(__name__)
 
 
-
-
 async def entry_point(ctx: JobContext):
+    """ Entry point for the agent job """
+    
     pid = os.getpid()
     logger.info(f"[pid={pid} job={ctx.job.id}] Starting Jarvis in room: {ctx.room.name}")
-
 
     await ctx.connect()
 
@@ -24,7 +24,7 @@ async def entry_point(ctx: JobContext):
     agent_config = {}
     if ctx.room.metadata:
         try:
-            agent_config = json.loads(ctx.room.metadata)
+            agent_config = parse_config(ctx.room.metadata)
             logger.info(f"Using config from LiveKit metadata: {agent_config}")
         except json.JSONDecodeError:
             pass
@@ -34,14 +34,14 @@ async def entry_point(ctx: JobContext):
         redis_key = f"Agent Config:{ctx.room.name}"
         config_json = await redis_client.get(redis_key)
         if config_json:
-            agent_config = json.loads(config_json)
+            agent_config = parse_config(config_json)
             logger.info(f"Using config from Redis: {config_json}")
         else:
             logger.warning(f"No agent config found in Redis for {ctx.room.name}, using defaults")
 
 
     model_id = agent_config.get("model_id", config.DEFAULT_LLM_MODEL)
-    voice = agent_config.get("voice", {})
+    voice = agent_config.get("voice", {}) or {}
 
     
 
