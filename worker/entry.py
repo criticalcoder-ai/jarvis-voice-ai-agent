@@ -11,6 +11,12 @@ logger = logging.getLogger(__name__)
 
 async def entry_point(ctx: JobContext):
     logger.info(f"Starting Jarvis in room: {ctx.room.name}")
+    
+    if not ctx.is_agent:
+        logger.info(f"Participant joined room: {ctx.room.name}, skipping config setup")
+        return
+
+    logger.info(f"Agent joining room: {ctx.room.name}")
 
 
     await ctx.connect()
