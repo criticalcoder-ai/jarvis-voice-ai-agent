@@ -6,7 +6,7 @@ from livekit.agents import AgentSession, JobContext
 from agent import Assistant
 import config
 from redis_client import redis_client
-from utils import parse_config
+from utils import get_from_redis_with_retry, parse_config
 
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ async def entry_point(ctx: JobContext):
     # Fallback to Redis if empty/missing
     if not agent_config:
         redis_key = f"Agent-Config:{ctx.room.name}"
-        config_json = await redis_client.get(redis_key)
+        config_json = await get_from_redis_with_retry(redis_key)
         if config_json:
             agent_config = parse_config(config_json)
             logger.info(f"Using config from Redis: {config_json}")

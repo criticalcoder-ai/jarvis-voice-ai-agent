@@ -1,4 +1,7 @@
+import asyncio
 import json
+
+from redis_client import redis_client
 
 
 def parse_config(raw):
@@ -19,3 +22,13 @@ def parse_config(raw):
             return {}
 
     return obj if isinstance(obj, dict) else {}
+
+
+async def get_from_redis_with_retry(key: str, attempts=2, delay=0.05):
+    for i in range(attempts):
+        raw = await redis_client.get(key)
+        if raw:
+            return raw
+        if i < attempts - 1:
+            await asyncio.sleep(delay)
+    return None
