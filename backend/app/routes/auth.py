@@ -72,13 +72,13 @@ async def auth_callback(request: Request):
 
 @router.get("/validate")
 async def validate_token(user=Depends(get_current_user_required)):
-    return {"status": "valid", "user_id": user.id}
+    return {"status": "valid", "user_id": user.get("sub")}
 
 
 @router.get("/user")
 async def get_user_info(user=Depends(get_current_user_required)):
     async with get_db_connection() as conn:
-        db_user = await get_user_by_id(conn, user.id)
+        db_user = await get_user_by_id(conn, user.get("sub"))
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found")
         return db_user
