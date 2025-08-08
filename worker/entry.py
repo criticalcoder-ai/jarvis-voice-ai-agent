@@ -17,9 +17,6 @@ async def entry_point(ctx: JobContext):
     pid = os.getpid()
     logger.info(f"[pid={pid} job={ctx.job.id}] Starting Jarvis in room: {ctx.room.name}")
 
-    if getattr(ctx, "_agent_started", False):
-        logger.info("agent already started in this ctx; skipping")
-        return
 
     await ctx.connect()
 
