@@ -55,7 +55,7 @@ async def create_session(
         
        # Save to Redis for the worker to fetch later
         await redis_client.setex(
-            f"Agent Config:{session_id}",
+            f"Agent-Config:{session_id}",
             1800,  # expire in 30 mins  TODO match session length
             json.dumps(agent_config)
         )
