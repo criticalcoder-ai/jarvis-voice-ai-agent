@@ -5,7 +5,7 @@ import os
 from livekit.agents import AgentSession, JobContext
 from agent import Assistant
 import config
-import redis_client
+from redis_client import redis_client
 
 
 logger = logging.getLogger(__name__)
