@@ -16,7 +16,7 @@ GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", BAS
 
 DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel
 # DEFAULT_LLM_MODEL = "openai/gpt-5-mini"
-DEFAULT_LLM_MODEL = "google/gemini-2.5-flash-lite"
+DEFAULT_LLM_MODEL = "google/gemini-2.5-flash"
 DEFAULT_TTS_VOICE = "en-US-Chirp3-HD-Achernar"
 DEFAULT_TTS_LANGUAGE = "en-US"
 DEFAULT_TTS_GENDER = "female"
