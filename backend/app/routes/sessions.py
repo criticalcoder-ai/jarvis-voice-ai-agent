@@ -57,11 +57,12 @@ async def create_session(
         await livekit_service.create_room(session_id, agent_config)
         
         # Save to Redis for the worker to fetch later
-        await redis_client.setex(
+        await redis_client.set(
             f"Agent Config:{session_id}",
-            30,  # expire in 30 or   TODO match session length
-            json.dumps(agent_config)
+            agent_config
         )
+        # Set the key to expire in 30 minutes, ttl (1800 seconds)
+        await redis_client.expire(f"Agent Config:{session_id}", 1800) # TODO match session length
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(
