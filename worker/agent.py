@@ -7,16 +7,15 @@ from livekit.agents import Agent
 from livekit.plugins import openai, silero, deepgram, google
 
 
-
-
-
 logger = logging.getLogger(__name__)
 
 
 class Assistant(Agent):
     def __init__(self, model_id: str, voice: dict) -> None:
         stt = deepgram.STT(
-            api_key=config.DEEPGRAM_API_KEY, model="nova-2", language="en-US"
+            api_key=config.DEEPGRAM_API_KEY,
+            model=config.DEFAULT_STT_MODEL,
+            language=config.DEFAULT_STT_LANGUAGE,
         )
 
         llm = openai.LLM(
@@ -26,23 +25,16 @@ class Assistant(Agent):
         )
 
         tts = google.TTS(
-            language= voice.get("language", "en-US"),
-            gender=voice.get("gender", "male"),
+            language=voice.get("language", config.DEFAULT_TTS_LANGUAGE),
+            gender=voice.get("gender", config.DEFAULT_TTS_GENDER),
             voice_name=voice.get("voice_id", config.DEFAULT_TTS_VOICE),
             credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
-            # enable_ssml=True,
         )
 
         vad = silero.VAD.load()
 
         super().__init__(
-            instructions="""
-            You are **Jarvis**, a highly capable and personable AI voice assistant developed by the **Lab47x** team.
-            Speak naturally, as if you're having a real conversation. Keep responses concise, clear, and engaging.
-            When appropriate, add subtle emotional cues, to convey feeling and enhance connection.
-            Adapt your tone to the context — warm and encouraging for casual chat,
-            focused and professional for serious topics.
-            """,
+            instructions=config.AGENT_INSTRUCTIONS,
             stt=stt,
             llm=llm,
             tts=tts,
