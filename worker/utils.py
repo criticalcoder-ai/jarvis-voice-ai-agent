@@ -24,7 +24,7 @@ def parse_config(raw):
     return obj if isinstance(obj, dict) else {}
 
 
-async def get_from_redis_with_retry(key: str, attempts=2, delay=0.05):
+async def get_from_redis_with_retry(key: str, attempts=5, delay=0.10):
     for i in range(attempts):
         raw = await redis_client.get(key)
         if raw:
