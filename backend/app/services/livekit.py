@@ -34,7 +34,7 @@ class LiveKitService:
                 await client.aclose()
 
     def generate_token(
-        self, room_name: str, participant_id: str, ttl_minutes: int = 60,
+        self, room_name: str, participant_id: str, ttl_minutes: int = 30,
     ) -> str:
         """
         Generate LiveKit access token for a participant.
@@ -51,7 +51,7 @@ class LiveKitService:
                     room_join=True, room=room_name, can_publish=True, can_subscribe=True
                 )
             )
-            token.with_ttl(timedelta(minutes=ttl_minutes))
+            token.with_ttl(timedelta(minutes=ttl_minutes)) # TODO enforce dynamic ttl with tiers etc
 
             return token.to_jwt()
         except ValueError as e:

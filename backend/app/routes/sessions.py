@@ -5,6 +5,7 @@ from uuid import uuid4
 import logging
 from app.auth.dependencies import get_user_id_or_guest
 from app.schemas.sessions import CreateSessionRequest, EndSessionRequest
+from app.services import redis_client
 from app.services.access_control import access_control
 from app.services.exceptions import TierNotFoundError, LimitExceededError
 from app.services.livekit import livekit_service
@@ -54,7 +55,13 @@ async def create_session(
         
         # Create LiveKit room
         await livekit_service.create_room(session_id, agent_config)
-
+        
+        # Save to Redis for the worker to fetch later
+        await redis_client.setex(
+            f"Agent Config:{session_id}",
+            30,  # expire in 30 or   TODO match session length
+            json.dumps(agent_config)
+        )
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(
