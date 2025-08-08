@@ -15,7 +15,7 @@ LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY")
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", BASE_DIR / "google-creds.json")
 
 DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel
-DEFAULT_LLM_MODEL = "google/gemini-2.5-flash-lite"
+DEFAULT_LLM_MODEL = "google/gemini-2.5-flash"
 DEFAULT_TTS_VOICE = "en-US-Chirp3-HD-Charon"
 DEFAULT_TTS_LANGUAGE = "en-US"
 DEFAULT_TTS_GENDER = "male"
