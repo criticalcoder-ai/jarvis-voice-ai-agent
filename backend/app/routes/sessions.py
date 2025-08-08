@@ -53,15 +53,16 @@ async def create_session(
             "voice": voice
         })
         
-        # Create LiveKit room
-        await livekit_service.create_room(session_id, agent_config)
-        
        # Save to Redis for the worker to fetch later
         await redis_client.setex(
             f"Agent Config:{session_id}",
             1800,  # expire in 30 mins  TODO match session length
             json.dumps(agent_config)
         )
+        
+        # Create LiveKit room
+        await livekit_service.create_room(session_id, agent_config)
+        
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(
