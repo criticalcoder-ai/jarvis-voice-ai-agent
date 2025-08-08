@@ -17,14 +17,14 @@ class AccessControlService:
             "guest": TierLimits(
                 name="Guest",
                 session_duration=120,  # 2 minutes
-                concurrent_sessions=1,
+                concurrent_sessions=10, # TODO make this 1 after testing
                 daily_limit=2,  # 2 min/day
                 features=["basic_voice_chat"],
             ),
             "free": TierLimits(
                 name="Free",
                 session_duration=None,  # Unlimited per session
-                concurrent_sessions=2,
+                concurrent_sessions=10, #TODO make this 2 after testing
                 daily_limit=120,  # 120 min/day
                 features=["voice_chat", "long_sessions"],
             ),
