@@ -15,7 +15,7 @@ VOICES: Dict[str, VoiceConfig] = {
     "en-US-Chirp3-HD-Charon": VoiceConfig(
         voice_id="en-US-Chirp3-HD-Charon",
         display_name="US Male – Charon",
-        language="English (US)",
+        language="en-US",
         type="chirp3-hd",
         gender="male",
         available_on_guest = True
@@ -23,7 +23,7 @@ VOICES: Dict[str, VoiceConfig] = {
     "en-US-Chirp3-HD-Kore": VoiceConfig(
         voice_id="en-US-Chirp3-HD-Kore",
         display_name="US Female – Kore",
-        language="English (US)",
+        language="en-US",
         type="chirp3-hd",
         gender="female",
         available_on_guest = True
@@ -31,7 +31,7 @@ VOICES: Dict[str, VoiceConfig] = {
     "en-US-Chirp3-HD-Leda": VoiceConfig(
         voice_id="en-US-Chirp3-HD-Leda",
         display_name="US Female – Leda",
-        language="English (US)",
+        language="en-US",
         type="chirp3-hd",
         gender="female",
         available_on_guest = False
@@ -40,7 +40,7 @@ VOICES: Dict[str, VoiceConfig] = {
     "en-GB-Chirp3-HD-Schedar": VoiceConfig(
         voice_id="en-GB-Chirp3-HD-Schedar",
         display_name="UK Male – Schedar",
-        language="English (UK)",
+        language="en-GB",
         type="chirp3-hd",
         gender="male",
         available_on_guest = True
@@ -48,7 +48,7 @@ VOICES: Dict[str, VoiceConfig] = {
     "en-GB-Chirp3-HD-Sulafat": VoiceConfig(
         voice_id="en-GB-Chirp3-HD-Sulafat",
         display_name="UK Female – Sulafat",
-        language="English (UK)",
+        language="en-GB",
         type="chirp3-hd",
         gender="female",
         available_on_guest = False
@@ -56,7 +56,7 @@ VOICES: Dict[str, VoiceConfig] = {
     "en-GB-Chirp3-HD-Zubenelgenubi": VoiceConfig(
         voice_id="en-GB-Chirp3-HD-Zubenelgenubi",
         display_name="UK Male – Zubenelgenubi",
-        language="English (UK)",
+        language="en-GB",
         type="chirp3-hd",
         gender="male",
         available_on_guest = False
@@ -65,7 +65,7 @@ VOICES: Dict[str, VoiceConfig] = {
     "en-US-Chirp3-HD-Aoede": VoiceConfig(
         voice_id="en-US-Chirp3-HD-Aoede",
         display_name="US Female – Aoede",
-        language="English (US)",
+        language="en-US",
         type="chirp3-hd",
         gender="female",
         available_on_guest = False
