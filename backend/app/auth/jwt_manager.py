@@ -16,7 +16,7 @@ class JWTManager:
         """ Create a JWT access token for a user. """
         expire = datetime.utcnow() + timedelta(minutes=self.expire_minutes)
         token_data = {
-            "sub": user_data["id"],
+            "sub": str(user_data["id"]),
             "email": user_data["email"],
             "name": user_data["name"],
             "picture": user_data.get("profile_pic"),
