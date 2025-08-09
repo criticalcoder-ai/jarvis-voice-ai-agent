@@ -1,86 +1,78 @@
 import json
 import logging
 import os
-from typing import Dict, Any, Tuple
-
 from livekit.agents import AgentSession, JobContext
-from livekit.plugins.google import TTS as GoogleTTS
-
 from agent import Assistant
 import config
 from utils import parse_config
-from redis_client import redis_client  # simple, single GET fallback
+from redis_client import redis_client
+from livekit.agents import AgentSession, JobContext
 
 logger = logging.getLogger(__name__)
 
 
-_TTS_CACHE: dict[Tuple[str, str, str], GoogleTTS] = {}
-
-
-def _get_tts(voice_cfg: Dict[str, Any]) -> GoogleTTS:
-    voice_id = (voice_cfg.get("voice_id") or config.DEFAULT_TTS_VOICE or "").strip()
-    language = (voice_cfg.get("language") or config.DEFAULT_TTS_LANGUAGE or "").strip()
-    gender   = (voice_cfg.get("gender")   or config.DEFAULT_TTS_GENDER   or "").strip()
-
-    key = (voice_id, language, gender)
-    tts = _TTS_CACHE.get(key)
-    if tts is None:
-        tts = GoogleTTS(
-            language=language,
-            gender=gender,
-            voice_name=voice_id,
-            credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
-        )
-        try:
-            tts.prewarm()  # ensure first utterance uses the selected voice
-            logger.info("Prewarmed TTS (voice=%s lang=%s gender=%s)", voice_id, language, gender)
-        except Exception:
-            logger.exception("TTS prewarm failed (continuing)")
-
-        _TTS_CACHE[key] = tts
-
-    return tts
-
-
 async def entry_point(ctx: JobContext):
-    """Entry point for the agent job."""
     pid = os.getpid()
-    logger.info("[pid=%s job=%s] Starting Jarvis in room: %s", pid, ctx.job.id, ctx.room.name)
+    logger.info(f"[pid={pid} job={ctx.job.id}] Starting Jarvis in room: {ctx.room.name}")
 
-    # Connect to room first
     await ctx.connect()
 
-    # Prefer LiveKit metadata
-    agent_config: Dict[str, Any] = {}
+    # === Get config: prefer metadata, fallback to Redis (no retry) ===
+    agent_config = {}
     if ctx.room.metadata:
-        agent_config = parse_config(ctx.room.metadata) or {}
-        if agent_config:
+        try:
+            agent_config = parse_config(ctx.room.metadata) or {}
             logger.info("Using config from LiveKit metadata: %s", agent_config)
+        except json.JSONDecodeError:
+            pass
 
-    # Fallback: single Redis GET 
     if not agent_config:
-        redis_key = f"agent_config:{ctx.room.name}"
+        redis_key = f"agent_config:{ctx.room.name}"  # normalize the key
         raw = await redis_client.get(redis_key)
         if raw:
             agent_config = parse_config(raw) or {}
-            if agent_config:
-                logger.info("Using config from Redis (parsed).")
-            else:
-                logger.warning("Redis value present but not valid JSON for key=%s", redis_key)
+            logger.info("Using config from Redis (parsed).")
         else:
-            logger.warning("No agent config found in Redis for %s; using defaults.", ctx.room.name)
+            logger.warning("No agent config found; using defaults")
 
-    # Defaults if still empty
     model_id = agent_config.get("model_id", config.DEFAULT_LLM_MODEL)
-    voice_cfg = agent_config.get("voice") or {}
+    v = agent_config.get("voice") or {}
+    voice_name = v.get("voice_id", config.DEFAULT_TTS_VOICE)
+    language   = v.get("language",  config.DEFAULT_TTS_LANGUAGE)
+    gender     = v.get("gender",    config.DEFAULT_TTS_GENDER)
 
+    # === Create session first (no start yet) ===
+    session = AgentSession()
 
-    # Build (or reuse) prewarmed TTS and give it to the session BEFORE start
-    tts = _get_tts(voice_cfg)
-    session = AgentSession(tts=tts)
+    # === FORCE the TTS on the session BEFORE start() ===
+    # Different LiveKit Agents versions expose different methods; try both.
+    if hasattr(session, "update_tts"):
+        await session.update_tts(
+            provider="google",
+            voice=voice_name,
+            languageCode=language,
+            gender=gender,
+        )
+    elif hasattr(session, "set_voice"):
+        await session.set_voice({
+            "provider": "google",
+            "voice": voice_name,
+            "languageCode": language,
+            "gender": gender,
+        })
+    else:
+        logger.warning("Session has no update_tts/set_voice; consider passing a TTS object to AgentSession(tts=...)")
 
-    # Start with a single source of truth for TTS (no separate voice dicts)
+    # === Prime the synth so the very first render uses THIS voice ===
+    try:
+        # Tiny SSML “tickle”—fast, inaudible, but forces the graph to lock the new voice
+        await session.say('<speak><break time="10ms"/></speak>', ssml=True)
+    except Exception:
+        # Some builds won’t allow say() before start(); that’s fine—we still forced update_tts above.
+        pass
+
+    # === Now start the agent ===
     await session.start(
-        agent=Assistant(model_id=model_id, tts=tts),
+        agent=Assistant(model_id=model_id, voice=v),  # keep your current Assistant signature
         room=ctx.room,
     )
