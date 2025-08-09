@@ -18,13 +18,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def login(request: Request):
     try:
         redirect_uri = request.url_for("auth_callback")
-        redirect_origin = request.query_params.get(
-            "redirect_origin", config.FRONTEND_DOMAIN
-        )
+
         
-        state = json.dumps({"redirect_origin": redirect_origin}) # TODO only use Frontend domain after testing
-        
-        return await oauth.google.authorize_redirect(request, redirect_uri, state=state)
+        return await oauth.google.authorize_redirect(request, redirect_uri)
     
     except Exception:
         logger.exception("Error during Google login redirect")
@@ -46,15 +42,7 @@ async def auth_callback(request: Request):
 
         token = jwt_manager.create_access_token(user)
 
-        # Read redirect origin
-        state_str = request.query_params.get("state", "{}")
-        
-        try:
-            state_data = json.loads(state_str)
-        except json.JSONDecodeError:
-            state_data = {}
-            
-        redirect_origin = state_data.get("redirect_origin", config.FRONTEND_DOMAIN)
+        redirect_origin = f"https://{config.FRONTEND_DOMAIN}"
 
         response = RedirectResponse(url=f"{redirect_origin}/")
         

@@ -54,6 +54,7 @@ class JWTManager:
             "samesite": "lax",
             "max_age": self.expire_minutes * 60,
             "path": "/",
+            "domain":"." + config.FRONTEND_DOMAIN,
         }
 
 
