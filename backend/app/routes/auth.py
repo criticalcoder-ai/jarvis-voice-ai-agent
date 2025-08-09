@@ -22,7 +22,7 @@ async def login(request: Request):
             "redirect_origin", config.FRONTEND_DOMAIN
         )
         
-        state = json.dumps({"redirect_origin": redirect_origin})
+        state = json.dumps({"redirect_origin": redirect_origin}) # TODO only use Frontend domain after testing
         
         return await oauth.google.authorize_redirect(request, redirect_uri, state=state)
     
@@ -33,7 +33,7 @@ async def login(request: Request):
         )
 
 
-@router.get("/callback", name="auth_callback")
+@router.get("/callback/google", name="auth_callback")
 async def auth_callback(request: Request):
     try:
         user_info = await get_google_user_info(request)
