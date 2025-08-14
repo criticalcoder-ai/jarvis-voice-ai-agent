@@ -48,10 +48,10 @@ async def create_session(
         await access_control.start_session(user_id, session_id)
         
         voice = get_voice_by_id(body.voice_id).model_dump()   
-        agent_config = json.dumps({
+        agent_config = {
             "model_id": body.model_id,
             "voice": voice
-        })
+        }
         
        # Save to Redis for the worker to fetch later
         await redis_client.setex(
