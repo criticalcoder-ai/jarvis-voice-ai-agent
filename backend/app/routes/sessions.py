@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status
 from uuid import uuid4
 import logging
 from app.auth.dependencies import get_user_id_or_guest
-from app.schemas.sessions import CreateSessionRequest, EndSessionRequest
+from app.schemas.sessions import (
+    CreateSessionRequest,
+    CreateSessionResponse,
+    EndSessionRequest,
+    EndSessionResponse,
+)
 from app.services.redis_client import redis_client
 from app.services.access_control import access_control
 from app.services.exceptions import TierNotFoundError, LimitExceededError
@@ -15,7 +20,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", status_code=status.HTTP_201_CREATED, response_model=CreateSessionResponse
+)
 async def create_session(
     request: Request,
     body: CreateSessionRequest,
@@ -46,23 +53,19 @@ async def create_session(
 
         # Track session in Redis
         await access_control.start_session(user_id, session_id)
-        
-        voice = get_voice_by_id(body.voice_id).model_dump()   
-        agent_config = {
-            "model_id": body.model_id,
-            "voice": voice
-        }
-        
-       # Save to Redis for the worker to fetch later
+
+        voice = get_voice_by_id(body.voice_id).model_dump()
+        agent_config = {"model_id": body.model_id, "voice": voice}
+
+        # Save to Redis for the worker to fetch later
         await redis_client.setex(
             f"Agent-Config:{session_id}",
             1800,  # expire in 30 mins  TODO match session length
-            json.dumps(agent_config)
+            json.dumps(agent_config),
         )
-        
+
         # Create LiveKit room
-        await livekit_service.create_room(session_id, agent_config)
-        
+        await livekit_service.create_room(session_id, json.dumps(agent_config))
 
         # Generate LiveKit token
         livekit_token = livekit_service.generate_token(
@@ -70,14 +73,23 @@ async def create_session(
             user_id,
         )
 
-        return {
-            "session_id": session_id,
-            "tier": tier,
-            "livekit_url": livekit_service.livekit_url,
-            "livekit_token": livekit_token,
-            "ip": client_ip,
-            "user_agent": user_agent,
-        }
+        # Compute usage + remaining to return to the frontend
+        usage_today = await access_control._get_daily_usage(user_id)
+        remaining_minutes = await access_control.get_remaining_minutes(user_id, tier)
+        limits = access_control.get_limits(tier)
+
+        return CreateSessionResponse(
+            session_id=session_id,  # str -> auto-validated as UUID if you pass UUID(session_id)
+            tier=tier,
+            features=limits.features,
+            max_session_duration_seconds=limits.session_duration,
+            usage_today_minutes=usage_today,
+            remaining_today_minutes=remaining_minutes,
+            livekit_url=livekit_service.livekit_url,
+            livekit_token=livekit_token,
+            ip=client_ip,
+            user_agent=user_agent,
+        )
 
     except TierNotFoundError as e:
         logger.warning(f"Tier not found for user {user_id}: {e}")
@@ -96,7 +108,7 @@ async def create_session(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.delete("/{session_id}", status_code=status.HTTP_202_ACCEPTED)
+@router.delete("/{session_id}", status_code=status.HTTP_202_ACCEPTED, response_model=EndSessionResponse)
 async def end_session(
     session_id: str,
     body: EndSessionRequest,
@@ -126,16 +138,22 @@ async def end_session(
         # Delete LiveKit room
         await livekit_service.delete_room(session_id)
 
+        # Return new usage snapshot so the UI updates immediately
+        usage_today = await access_control._get_daily_usage(user_id)
+        remaining_minutes = await access_control.get_remaining_minutes(user_id, tier)
+
         logger.info(
             f"Ended session {session_id} for {user_id} | "
             f"Duration: {duration_seconds}s | IP: {client_ip}"
         )
 
-        return {
-            "status": "ended",
-            "session_id": session_id,
-            "duration_seconds": duration_seconds,
-        }
+        return EndSessionResponse(
+            status="ended",
+            session_id=session_id,
+            duration_seconds=duration_seconds,
+            usage_today_minutes=usage_today,
+            remaining_today_minutes=remaining_minutes,
+        )
 
     except HTTPException:
         raise

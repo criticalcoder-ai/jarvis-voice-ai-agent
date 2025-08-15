@@ -29,6 +29,11 @@ class AccessControlService:
                 features=["voice_chat", "long_sessions"],
             ),
         }
+    
+    def get_limits(self, tier: str) -> TierLimits:
+        if tier not in self.tiers:
+            raise TierNotFoundError(reason=f"Invalid tier: {tier}", action="Check tiers")
+        return self.tiers[tier]
 
     async def get_active_sessions(self, user_id: str) -> int:
         """Returns the number of active sessions for a user."""
@@ -38,6 +43,13 @@ class AccessControlService:
         """Returns the number of minutes used today for the user."""
         today = datetime.utcnow().strftime("%Y-%m-%d")
         return int(await self.redis.get(f"user_daily_usage:{user_id}:{today}") or 0)
+    
+    async def get_remaining_minutes(self, user_id: str, tier: str) -> Optional[int]:
+        limits = self.get_limits(tier)
+        if limits.daily_limit is None:
+            return None
+        used = await self._get_daily_usage(user_id)
+        return max(limits.daily_limit - used, 0)
 
     async def check_permission(self, user_id: str, tier: str) -> AccessResult:
         """Checks if a user has permission to access a given tier."""
