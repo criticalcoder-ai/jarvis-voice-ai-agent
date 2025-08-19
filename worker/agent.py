@@ -17,7 +17,6 @@ class Assistant(Agent):
         stt = GoogleSTT(
             model="chirp",
             spoken_punctuation=True,
-            language_code= config.DEFAULT_STT_LANGUAGE,
             credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
         )
 
