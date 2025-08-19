@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Assistant(Agent):
     def __init__(self, model_id: str, tts: GoogleTTS) -> None:
-        stt = GoogleSTT.STT(
+        stt = GoogleSTT(
             model="chirp",
             spoken_punctuation=True,
             language_code= config.DEFAULT_STT_LANGUAGE,
