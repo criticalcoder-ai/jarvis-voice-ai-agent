@@ -5,6 +5,7 @@ import config
 import metric_handlers as mh
 from livekit.agents import Agent
 from livekit.plugins.google import TTS as GoogleTTS
+from livekit.plugins.google import STT as GoogleSTT
 from livekit.plugins import openai, silero, deepgram
 
 
@@ -13,10 +14,11 @@ logger = logging.getLogger(__name__)
 
 class Assistant(Agent):
     def __init__(self, model_id: str, tts: GoogleTTS) -> None:
-        stt = deepgram.STT(
-            api_key=config.DEEPGRAM_API_KEY,
-            model=config.DEFAULT_STT_MODEL,
-            language=config.DEFAULT_STT_LANGUAGE,
+        stt = GoogleSTT.STT(
+            model="chirp",
+            spoken_punctuation=True,
+            language_code= config.DEFAULT_STT_LANGUAGE,
+            credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
         )
 
         llm = openai.LLM(
