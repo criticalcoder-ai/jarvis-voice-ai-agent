@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 class Assistant(Agent):
     def __init__(self, model_id: str, tts: GoogleTTS) -> None:
         stt = GoogleSTT(
-            model="chirp",
             spoken_punctuation=True,
             credentials_file=config.GOOGLE_APPLICATION_CREDENTIALS,
         )
