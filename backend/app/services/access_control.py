@@ -16,7 +16,7 @@ class AccessControlService:
         self.tiers = {
             "guest": TierLimits(
                 name="Guest",
-                session_duration=120,  # 2 minutes
+                session_duration=600,  # 10 min # TODO make this 2-3 min after testing
                 concurrent_sessions=50, # TODO make this 1 after testing
                 daily_limit=2,  # 2 min/day
                 features=["basic_voice_chat"],
@@ -25,7 +25,7 @@ class AccessControlService:
                 name="Free",
                 session_duration=None,  # Unlimited per session
                 concurrent_sessions=50, #TODO make this 2 after testing
-                daily_limit=120,  # 120 min/day
+                daily_limit=600,  # 10 min/day
                 features=["voice_chat", "long_sessions"],
             ),
         }
