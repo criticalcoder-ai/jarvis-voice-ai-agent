@@ -1,6 +1,7 @@
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routes.completions import router as completions_router
 
 
 logging.basicConfig(
@@ -23,4 +24,4 @@ app.add_middleware(
 def root():
     return {"service": "chat", "status": "ok"}
 
-
+app.include_router(completions_router)
