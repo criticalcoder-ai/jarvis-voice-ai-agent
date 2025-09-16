@@ -38,6 +38,14 @@ class ChatCompletionRequest(BaseModel):
         None,
         description="Unique identifier for the end-user (for logging/abuse monitoring)",
     )
+    chat_id: Optional[str] = Field(
+        None,
+        description="Existing chat thread ID. If omitted, a new chat is created.",
+    )
+    message_id: Optional[str] = Field(
+        None,
+        description="Client-supplied ID for the new user message (for idempotency).",
+    )
 
 
 class DeltaMessage(BaseModel):
@@ -94,6 +102,12 @@ class ChatCompletionChunk(BaseModel):
         description="Unix timestamp (seconds) when the chunk was created.",
     )
     model: str = Field(..., description="The model that generated this chunk.")
+    chat_id: Optional[str] = Field(
+        None, description="Chat thread ID for stateful conversations."
+    )
+    message_id: Optional[str] = Field(
+        None, description="Identifier for the assistant message being streamed."
+    )
     choices: List[ChatCompletionChunkChoice] = Field(
         ..., description="List of choices being streamed (usually length 1)."
     )
